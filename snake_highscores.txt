@@ -1,0 +1,2 @@
+; SNAKE HIGHSCORES
+; name|score
