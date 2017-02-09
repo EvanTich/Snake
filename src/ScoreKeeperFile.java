@@ -1,26 +1,26 @@
 import java.io.*;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * @author Evan Tichenor (evan.tichenor@gmail.com)
  * @version 1.0, 12/20/2016
  */
-public class ScoreKeeperFile {
+public class ScoreKeeperFile extends ScoreKeeper {
 
-    private static Map<String, Integer> scores;
+    private static List<ScoreKeeper.Score> scores;
     private static File scoreFile;
 
     static { // static constructor!
-        scores = new LinkedHashMap<>();
+        scores = new ArrayList<>();
         scoreFile = new File("snake_highscores.txt"); // directory to the score file
+    }
 
+    public ScoreKeeperFile() {
+        KEEPER = this;
         loadScores();
     }
 
-    private static void loadScores() {
+    protected void loadScores() {
         try (BufferedReader scan = new BufferedReader(new FileReader(scoreFile))) {
             if(scoreFile.createNewFile())
                 return; // if it didn't exist already, why read from it?
@@ -33,7 +33,7 @@ public class ScoreKeeperFile {
                 String[] combo = score.split("[|]");
 
                 // put scores where needed
-                scores.put(combo[0], Integer.parseInt( combo[1].replace(" ", "") ));
+                scores.add( new ScoreKeeper.Score( combo[0], Integer.parseInt(combo[1].replace(" ", "")) ) );
             }
 
         } catch (IOException e) {
@@ -41,16 +41,16 @@ public class ScoreKeeperFile {
         }
     }
 
-    public static boolean saveScores() {
-        scores = sortByValue(scores); // sort before saving
+    public boolean saveScores() {
+        Collections.sort(scores); // sort before saving
 
         try (BufferedWriter write = new BufferedWriter(new FileWriter(scoreFile))) {
             // always write these two statement at the top of the highscore file
             write.write("; SNAKE HIGHSCORES\n; name|score\n");
 
             // write all scores to file
-            for (Map.Entry<String, Integer> score : scores.entrySet())
-                write.write(String.format("%1s|%2d%n", score.getKey(), score.getValue()));
+            for (ScoreKeeper.Score score : scores)
+                write.write(String.format("%1s|%2d%n", score.getName(), score.getScore()));
 
         } catch (IOException e) {
             System.out.println("Problem saving scores.");
@@ -60,32 +60,28 @@ public class ScoreKeeperFile {
         return true;
     }
 
-    public static boolean newScore(String name, int score) {
-        scores.put(name, score);
+    public boolean newScore(String name, int value) {
+        Score score = new Score(name, value);
+        scores.add(score);
         return saveScores();
     }
 
-    public static Map<String, Integer> getScores() {
+    public List<Score> getScores() {
         return scores;
     }
 
-    public static int getHighscore() {
-        int best = 0;
-        for(Map.Entry<String, Integer> score : scores.entrySet())
-            if(score.getValue() > best)
-                best = score.getValue();
+    public Score getHighscore() {
+        if(scores.size() == 0)
+            return new Score("Beel", 0);
+
+        Score best = scores.get(0);
+        for(ScoreKeeper.Score score : scores)
+            if(score.getScore() > best.getScore())
+                best = score;
         return best;
     }
 
-    private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-        return map.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1,
-                        LinkedHashMap::new
-                ));
+    public boolean close() {
+        return true;
     }
 }

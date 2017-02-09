@@ -13,14 +13,15 @@ public class Main extends JFrame {
 
     public static JFrame frame;
     private static boolean paused;
-    // public static ScoreKeeper scoreKeeper;
 
     public static void main(String[] args) {
         frame = new JFrame("Snake");
-        // scoreKeeper = new ScoreKeeperSQL();
 
-        SnakeGame game = new SnakeGame();
+        // change this to (new ScoreKeeperSQL()) for sql score keeper
+        ScoreKeeper.setKeeper(new ScoreKeeperFile());
+
         EasyKey key = new EasyKey();
+        SnakeGame game = new SnakeGame();
 
         frame.add(game, BorderLayout.CENTER);
         frame.addKeyListener(key);
@@ -29,7 +30,7 @@ public class Main extends JFrame {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if(ScoreKeeperSQL.close())
+                if(ScoreKeeper.KEEPER.close())
                     System.out.println("SQL database closed.");
 
                 System.out.println("Game closing...");
@@ -95,10 +96,10 @@ public class Main extends JFrame {
                 }
             }
 
-            if(EasyKey.getKey() == 'h')
+            if(EasyKey.keyPressed('H'))
                 showHighscores();
 
-            if(EasyKey.getKey() == 27)
+            if(EasyKey.keyPressed(27))
                 running = false;
         }
 
@@ -107,7 +108,7 @@ public class Main extends JFrame {
 
     public static void showHighscores() {
         paused = true;
-        EasyKey.emptyKey();
+        EasyKey.emptyKeys();
 
         final JDialog dialog = new JDialog(Main.frame, "Highscores");
 
@@ -122,7 +123,7 @@ public class Main extends JFrame {
         panel.add(header, BorderLayout.NORTH);
 
         String scoreStrings = "<html><center>";
-        for(ScoreKeeper.Score score : ScoreKeeperSQL.getScores())
+        for(ScoreKeeper.Score score : ScoreKeeper.KEEPER.getScores())
             scoreStrings += score + "<br>";
         scoreStrings += "</center></html>";
 
@@ -139,7 +140,7 @@ public class Main extends JFrame {
         exit.addActionListener(e -> {
             dialog.dispose();
             paused = false;
-            EasyKey.emptyKey();
+            EasyKey.emptyKeys();
         });
 
         panel.add(exit, BorderLayout.SOUTH);

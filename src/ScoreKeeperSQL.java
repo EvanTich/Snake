@@ -5,7 +5,7 @@ import java.util.ArrayList;
  * @author Evan Tichenor (evan.tichenor@gmail.com)
  * @version 1.0, 12/20/2016
  */
-public class ScoreKeeperSQL {
+public class ScoreKeeperSQL extends ScoreKeeper {
 
     private static Connection connection;
     private static final String SERVER;
@@ -13,14 +13,19 @@ public class ScoreKeeperSQL {
     private static final String PASS;
 
     static { // static constructor!
+
+        // pls don't kill this server (don't show to github)
         SERVER = "jdbc:postgresql://ec2-54-204-42-178.compute-1.amazonaws.com/d79jecqjig77mu?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
         USER = "zmghkhlgcfmwqj";
         PASS = "jlsFuxll2Qj8kTAYTzjrm2b5KI";
+    }
 
+    public ScoreKeeperSQL() {
+        KEEPER = this;
         loadScores();
     }
 
-    private static void loadScores() {
+    protected void loadScores() {
         connection = null;
 
         try {
@@ -41,7 +46,7 @@ public class ScoreKeeperSQL {
         System.out.println("Connected to database.");
     }
 
-    public static boolean newScore(String name, int score) {
+    public boolean newScore(String name, int score) {
         try {
             Statement statement = connection.createStatement();
             statement.execute(
@@ -57,8 +62,8 @@ public class ScoreKeeperSQL {
         return true;
     }
 
-    public static ArrayList<ScoreKeeper.Score> getScores() {
-        ArrayList<ScoreKeeper.Score> scores = new ArrayList<>();
+    public ArrayList<Score> getScores() {
+        ArrayList<Score> scores = new ArrayList<>();
 
         try {
             Statement statement = connection.createStatement();
@@ -68,7 +73,7 @@ public class ScoreKeeperSQL {
                 String name = rs.getString("gameuser");
                 int score = rs.getInt("score");
 
-                scores.add(new ScoreKeeper.Score(name, score));
+                scores.add(new Score(name, score));
             }
 
             rs.close();
@@ -80,8 +85,8 @@ public class ScoreKeeperSQL {
         return scores;
     }
 
-    public static ScoreKeeper.Score getHighscore() {
-        ScoreKeeper.Score high = null;
+    public Score getHighscore() {
+        Score high = null;
 
         try {
             Statement statement = connection.createStatement();
@@ -92,7 +97,7 @@ public class ScoreKeeperSQL {
             String user = rs.getString("gameuser");
             int score = rs.getInt("score");
 
-            high = new ScoreKeeper.Score(user, score);
+            high = new Score(user, score);
 
             rs.close();
             statement.close();
@@ -107,7 +112,7 @@ public class ScoreKeeperSQL {
      * Closes the statement and connection for the sql database.
      * @return true if successfully closed, false otherwise.
      */
-    public static boolean close() {
+    public boolean close() {
         try {
             if(connection != null)
                 connection.close();

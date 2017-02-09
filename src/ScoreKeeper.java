@@ -1,13 +1,15 @@
 import java.sql.Timestamp;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Evan Tichenor (evan.tichenor@gmail.com)
  * @version 1.0, 12/20/2016
  */
-public class ScoreKeeper {
+public abstract class ScoreKeeper {
 
-    static class Score {
+    public static ScoreKeeper KEEPER;
+
+    static class Score implements Comparable<Score> {
         private String name;
         private int score;
         private Timestamp time;
@@ -34,6 +36,12 @@ public class ScoreKeeper {
             return time;
         }
 
+        @Override
+        public int compareTo(Score o) {
+            return score - o.score;
+        }
+
+        @Override
         public String toString() {
             if(time != null)
                 return String.format("%1s|%2d|%3s", name, score, time);
@@ -41,20 +49,17 @@ public class ScoreKeeper {
         }
     }
 
-    private static void loadScores() {
-
-    }
-    public static boolean newScore(String name, int score) {
-        return false;
-    }
-    public static ArrayList<Score> getScores() {
-        return null;
-    }
-    public static Score getHighscore() {
-        return null;
+    public static ScoreKeeper getKeeper() {
+        return KEEPER;
     }
 
-    public static boolean close() {
-        return false;
+    public static void setKeeper(ScoreKeeper keeper) {
+        KEEPER = keeper;
     }
+
+    protected abstract void loadScores();
+    public abstract boolean newScore(String name, int score);
+    public abstract List<Score> getScores();
+    public abstract Score getHighscore();
+    public abstract boolean close();
 }

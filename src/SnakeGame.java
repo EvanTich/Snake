@@ -85,29 +85,18 @@ public class SnakeGame extends JPanel {
 
     public void keys() {
         if(!paused) {
-            switch (EasyKey.getKey()) {
-                case 'w':
-                case 38: // up arrow
-                    if (!snake.getDir().equals(0, 1)) // for making sure you cant go backwards
-                        snake.setDir(0, -1);
-                    break;
-                case 'a':
-                case 37: // left arrow
-                    if (!snake.getDir().equals(1, 0))
-                        snake.setDir(-1, 0);
-                    break;
-                case 's':
-                case 40: // down arrow
-                    if (!snake.getDir().equals(0, -1))
-                        snake.setDir(0, 1);
-                    break;
-                case 'd':
-                case 39: // right arrow
-                    if (!snake.getDir().equals(-1, 0))
-                        snake.setDir(1, 0);
-                    break;
-                default:
-                    break;
+            if(EasyKey.keyPressed('W', 38)) { // w or up
+                if (!snake.getDir().equals(0, 1)) // for making sure you cant go backwards
+                    snake.setDir(0, -1);
+            } else if(EasyKey.keyPressed('A', 37)) { // a or left
+                if (!snake.getDir().equals(1, 0))
+                    snake.setDir(-1, 0);
+            } else if(EasyKey.keyPressed('S', 40)) { // s or down
+                if (!snake.getDir().equals(0, -1))
+                    snake.setDir(0, 1);
+            } else if(EasyKey.keyPressed('D', 39)) { // d or right
+                if (!snake.getDir().equals(-1, 0))
+                    snake.setDir(1, 0);
             }
         } else
             snake.setDir(0, 0);
@@ -125,7 +114,7 @@ public class SnakeGame extends JPanel {
     private void reset() { // wah wah game over
         paused = true;
 
-        ScoreKeeper.Score highscore = ScoreKeeperSQL.getHighscore();
+        ScoreKeeper.Score highscore = ScoreKeeper.KEEPER.getHighscore();
 
         String special = "";
         if(score() > TILESX*TILESY - EATSIZE) // huge rainbow text below
@@ -194,8 +183,8 @@ public class SnakeGame extends JPanel {
         dialog.add(panel);
 
         ActionListener action = e -> {
-            ScoreKeeperSQL.newScore(
-                text.getText().isEmpty() ? System.getProperty("user.name") : text.getText(),
+            ScoreKeeper.KEEPER.newScore(
+                text.getText().isEmpty() ? System.getProperty("user.name") : text.getText(), // taking names and notes
                 score
             );
             dialog.dispose();
@@ -226,6 +215,6 @@ public class SnakeGame extends JPanel {
         snake = new Snake(Point.randomPoint(TILESX, TILESY));
         food = makeFood();
 
-        EasyKey.emptyKey();
+        EasyKey.emptyKeys();
     }
 }

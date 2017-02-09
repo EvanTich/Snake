@@ -1,5 +1,7 @@
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Evan Tichenor (evan.tichenor@gmail.com)
@@ -7,44 +9,50 @@ import java.awt.event.KeyListener;
  */
 public class EasyKey implements KeyListener {
 
-    private static char key; // will always be lowercase
-    private static boolean pressed;
+    private static List<Integer> keys;
 
     public EasyKey() {
         System.out.println("EasyKey initialised!");
 
-        key = ' ';
-        pressed = false;
+        keys = new ArrayList<>();
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
-        key = Character.toLowerCase(e.getKeyChar());
+
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        pressed = true;
-        key = (char)e.getKeyCode();
+        keys.add(e.getKeyCode());
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        pressed = false;
+        if(keys.contains(e.getKeyCode()))
+            keys.removeIf(k -> k.equals(e.getKeyCode()));
     }
 
-    public static synchronized char getKey() {
-        return key;
+    public static boolean keyPressed(int c) {
+        return keys.contains(c);
+    }
+
+    public static boolean keyPressed(int... ints) {
+        for(int key : ints)
+            if(keys.contains(key))
+                return true;
+        return false;
     }
 
     /**
      * Used to fix direction bug for the snake.
      */
-    public static void emptyKey() {
-        EasyKey.key = 19;
+    public static void emptyKeys() {
+        keys.clear();
     }
 
-    public static synchronized boolean getPressed() {
-        return pressed;
+    public static boolean noPress() {
+        return keys.isEmpty();
     }
+
 }
